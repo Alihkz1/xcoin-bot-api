@@ -1,0 +1,2 @@
+docker build -t telegram-bot .
+docker run -d --name telegram-bot -e BOT_TOKEN=7253380306:AAGTAZGbHLduXfN-Wvjq7mQVAqFRgCUk6kk telegram-bot

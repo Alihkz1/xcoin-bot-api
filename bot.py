@@ -1,26 +1,28 @@
-from telegram.ext import Updater, CommandHandler
-import os
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import Application, CommandHandler, ContextTypes
+import httpx
 
-def start(update, context):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.message.from_user.id
     chat_id = update.message.chat_id
-    
-    # Construct the URL with the user ID
-    url = f"https://xcoin.liara.run?userId={user_id}"
-    
-    # Send the URL to the user
-    context.bot.send_message(chat_id=chat_id, text=f"Click here to view your data: {url}")
 
-def main():
-    TOKEN = os.getenv("7253380306:AAGTAZGbHLduXfN-Wvjq7mQVAqFRgCUk6kk")
-    
-    updater = Updater(TOKEN, use_context=True)
-    dp = updater.dispatcher
-    
-    dp.add_handler(CommandHandler("start", start))
-    
-    updater.start_polling()
-    updater.idle()
+    url = f"https://xcoin.liara.run?userId={user_id}"
+    button = InlineKeyboardButton(text="Click to View Your Data", url=url)
+    keyboard = [[button]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await context.bot.send_message(chat_id=chat_id, text="Click the button below to view your data:", reply_markup=reply_markup)
+
+async def main():
+    TOKEN = "7253380306:AAGTAZGbHLduXfN-Wvjq7mQVAqFRgCUk6kk"
+    application = Application.builder().token(TOKEN).build()
+
+    application.add_handler(CommandHandler("start", start))
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        application.request = lambda *args, **kwargs: client.request(*args, **kwargs)
+        await application.run_polling()
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+    asyncio.run(main())
